@@ -3,6 +3,7 @@ import './App.css';
 import fire from './config/Fire'
 import Login from './components/Login';
 import Cards from './components/Cards';
+import teenPattiLogo from './images/logo.png'
 
 class App extends Component {
 
@@ -12,7 +13,7 @@ class App extends Component {
     this.state = {
       user: {},
     }
-  }
+  } 
 
   componentDidMount() {
     this.authListener();
@@ -32,9 +33,10 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h2>Welcome to Teen Patti</h2>
+        <img src={teenPattiLogo} width="200" alt="logo-image"/>
+        <br /> <br /> <br />
         <div>
-          {this.state.user ? (<Cards />) : (<Login/>)}
+          {this.state.user ? (<Cards userState={this.state.user} />) : (<Login/>)}
         </div>
       </div>
     );

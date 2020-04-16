@@ -12,7 +12,7 @@ const getItemsFromDatabase = (res) => {
         snapshot.forEach((item) => {
             items.push({
                 id: item.key,
-                item: item.val().item
+                item: item.val().suit
             });
         });
         res.status(200).json(items);
