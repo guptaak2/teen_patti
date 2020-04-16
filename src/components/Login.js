@@ -8,7 +8,7 @@ var cards = [];
 class Login extends Component {
 	constructor(props) {
 		super(props);
-		
+
 		this.login = this.login.bind(this);
 		this.signup = this.signup.bind(this);
 		this.handleEmailFieldChange = this.handleEmailFieldChange.bind(this)
@@ -20,25 +20,21 @@ class Login extends Component {
 			firstName: '',
 			email: '',
 			password: '',
+			emailHelperText: 'Please enter your email',
+			passwordHelperText: 'Please enter your password',
+			emailError: false,
+			passwordError: false
 		};
 	}
-	
+
 	componentDidMount() {
-		// GET CARDS BRO
-		const dbRef = fire.database().ref().child('cards')
-		dbRef.on('value', snap => {
-			snap.val().forEach((card) => {
-				cards.push({
-					suit: card.suit,
-					card: card.card
-				});
-			})
-			cards.forEach((card) => {
-				console.log("Suit: " + card.suit + " Card: " + card.card)
-			})
-		})
+		console.log("componentDidMount()")
 	}
-	
+
+	componentDidUpdate() {
+		console.log()
+	}
+
 	getUserData() {
 		var userId = fire.auth().currentUser.uid;
 		console.log(userId)
@@ -47,24 +43,64 @@ class Login extends Component {
 			console.log(username)
 		});
 	}
-	
+
 	login(e) {
 		e.preventDefault();
 		fire.auth().signInWithEmailAndPassword(this.state.email, this.state.password).then((u) => {
+			this.setState({
+				emailError: false,
+				emailHelperText: 'Please enter your email',
+				passwordError: false,
+				passwordHelperText: 'Please enter your password'
+			})
 		}).catch((error) => {
 			console.log(error);
+			if (error.code == 'auth/wrong-password') {
+				this.setState({
+					emailError: false,
+					emailHelperText: 'Please enter your email',
+					passwordHelperText: "Incorrect password. Please try again",
+					passwordError: true
+				})
+			} else if (error.code == 'auth/invalid-email') {
+				this.setState({
+					emailHelperText: "Invalid email. Please try again",
+					emailError: true,
+					passwordError: false,
+					passwordHelperText: 'Please enter your password'
+				})
+			}
 		});
 	}
-	
+
 	signup(e) {
 		e.preventDefault();
 		fire.auth().createUserWithEmailAndPassword(this.state.email, this.state.password).then((u) => {
-			this.writeNewUser()
+			if (u.user) {
+				this.setState({
+					emailError: false,
+					emailHelperText: 'Please enter your email',
+					passwordError: false,
+					passwordHelperText: 'Please enter your password'
+				})
+				u.user.updateProfile({
+					displayName: this.state.firstName
+				})
+				this.writeNewUser()
+			}
 		}).catch((error) => {
 			console.log(error);
+			if (error.code == 'auth/weak-password') {
+				this.setState({
+					emailError: false,
+					emailHelperText: 'Please enter your email',
+					passwordError: true,
+					passwordHelperText: 'Password should be at least 6 characters'
+				})
+			}
 		})
 	}
-	
+
 	writeNewUser() {
 		var userId = fire.auth().currentUser.uid;
 		var updates = {};
@@ -81,54 +117,54 @@ class Login extends Component {
 			}
 		});
 	}
-	
+
 	handleEmailFieldChange(e) {
 		e.preventDefault()
 		this.setState({
 			email: e.target.value
 		})
 	}
-	
+
 	handlePasswordFieldChange(e) {
 		e.preventDefault()
 		this.setState({
 			password: e.target.value
 		})
 	}
-	
+
 	handleFirstNameFieldChange(e) {
 		e.preventDefault()
 		this.setState({
 			firstName: e.target.value
 		})
 	}
-	
+
 	render() {
 		return (
 			<div align="center">
-			<div className="Login">
-			<form>
-			<Box>
-			<TextField id="firstName" label="First name (lowercase)" value={this.state.firstName} onChange={this.handleFirstNameFieldChange} helperText="Please enter your first name" />
-			</Box>
-			<Box>
-			<TextField id="email" label="Email" value={this.state.email} onChange={this.handleEmailFieldChange} helperText="Please enter your email" />
-			</Box>
-			<br />
-			<Box>
-			<TextField id="password" type="password" label="Password" value={this.state.password} onChange={this.handlePasswordFieldChange} helperText="Please enter your password" />
-			</Box>
-			<Box m={2} pt={3}>
-			<Button variant="contained" color="primary" onClick={this.login.bind(this)} >LOGIN</Button>
-			</Box>
-			<Box>
-			<Button className="btn btn-success" variant="contained" color="primary" onClick={this.signup.bind(this)} >SIGN UP</Button>
-			</Box>
-			</form>
+				<div className="Login">
+					<form>
+						<Box>
+							<TextField id="firstName" label="First name (lowercase)" value={this.state.firstName} onChange={this.handleFirstNameFieldChange} helperText="Please enter your first name" />
+						</Box>
+						<Box>
+							<TextField id="email" label="Email" value={this.state.email} onChange={this.handleEmailFieldChange} helperText={this.state.emailHelperText} error={this.state.emailError ? true : false} />
+						</Box>
+						<br />
+						<Box>
+							<TextField id="password" type="password" label="Password" value={this.state.password} onChange={this.handlePasswordFieldChange} helperText={this.state.passwordHelperText} error={this.state.passwordError ? true : false} />
+						</Box>
+						<Box m={2} pt={3}>
+							<Button variant="contained" color="primary" onClick={this.login.bind(this)} >LOGIN</Button>
+						</Box>
+						<Box>
+							<Button className="btn btn-success" variant="contained" color="primary" onClick={this.signup.bind(this)} >SIGN UP</Button>
+						</Box>
+					</form>
+				</div>
 			</div>
-			</div>
-			)
-		}
+		)
 	}
-	
-	export default Login;
+}
+
+export default Login;

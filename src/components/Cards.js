@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { TextField, Button } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import fire from 'firebase'
 
-var URL = "https://us-central1-teen-patti-5a5fc.cloudfunctions.net"
 const divStyle = {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: 'center'
 };
 
 class Cards extends Component {
@@ -21,12 +18,17 @@ class Cards extends Component {
         this.getCards = this.getCards.bind(this);
         this.getRealCards = this.getRealCards.bind(this);
         this.resetGame = this.resetGame.bind(this);
+        this.getMessages = this.getMessages.bind(this);
+        this.packed = this.packed.bind(this);
+        this.showCards = this.showCards.bind(this);
+
         this.state = {
             cardIndicies: [],
             firstCard: [],
             secondCard: [],
             thirdCard: [],
             cards: [],
+            messages: [],
             numPlayers: '',
             userState: this.props.userState,
             gameSet: true
@@ -45,6 +47,27 @@ class Cards extends Component {
         fire.database().ref('users/isGameSet').on('value', snap => {
             this.setState({ gameSet: snap.val() })
         })
+
+        fire.database().ref('messages').on('value', snap => {
+            this.setState({ messages: [] })
+            snap.forEach((msg) => {
+                this.setState({
+                    messages: this.state.messages.concat(msg.val().message)
+                });
+            })
+        })
+    }
+
+    getMessages() {
+        return (
+            <div>
+                {this.state.messages.map((message, key) => {
+                    return (
+                        <h3 key={key}>{message}</h3>
+                    )
+                })}
+            </div>
+        )
     }
 
     logout() {
@@ -64,10 +87,12 @@ class Cards extends Component {
         fire.database().ref().update(updates);
 
         this.setState((state) => {
-            return {gameSet : !state.gameSet}
+            return { gameSet: !state.gameSet }
         })
 
-        console.log('resetGame: ' + this.state.gameSet)
+        var updates = {};
+        updates['messages/'] = null;
+        fire.database().ref().update(updates);
     }
 
     generate(e) {
@@ -94,6 +119,7 @@ class Cards extends Component {
         updates['users/' + 'isGameSet'] = true;
         fire.database().ref().update(updates);
 
+        // update cards to database
         var i = 0;
         fire.database().ref('users').child('list').once('value', snap => {
             snap.forEach((user) => {
@@ -106,23 +132,25 @@ class Cards extends Component {
     getCards(e) {
         e.preventDefault()
         fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards').once('value').then((snap => {
-            this.setState({ cardIndicies: snap.val()})
+            this.setState({ cardIndicies: snap.val() })
             this.getRealCards()
         }));
     }
 
     getRealCards() {
         fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-            this.setState({ firstCard: snap.val()})
+            this.setState({ firstCard: snap.val() })
         }));
 
         fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
-            this.setState({ secondCard: snap.val()})
+            this.setState({ secondCard: snap.val() })
         }));
 
         fire.database().ref('cards/' + this.state.cardIndicies[2]).once('value').then((snap => {
-            this.setState({ thirdCard: snap.val()})
+            this.setState({ thirdCard: snap.val() })
         }));
+
+        fire.database().ref('messages/').push({ message: this.state.userState.displayName + ' is SEEN' })
     }
 
     renderCards() {
@@ -142,30 +170,59 @@ class Cards extends Component {
         })
     }
 
+    packed(e) {
+        e.preventDefault()
+        fire.database().ref('messages/').push({ message: this.state.userState.displayName + ' is PACK' })
+    }
+
+    showCards(e) {
+        e.preventDefault()
+        fire.database().ref('messages/').push({
+            message: this.state.userState.displayName + ' is SHOW and their cards are: ' +
+                this.state.firstCard.card + ' ' + this.state.firstCard.suit + ' ' +
+                this.state.secondCard.card + ' ' + this.state.secondCard.suit + ' ' +
+                this.state.thirdCard.card + ' ' + this.state.thirdCard.suit
+        })
+    }
+
     render() {
         return (
-            <div className="container">
-                <div className="top_row" style={divStyle}>
+            <div className="container" >
+                <div className="setup_game" style={divStyle}>
                     {!this.state.gameSet && <div style={divStyle}>
-                        <Box>
+                        <Box m={2}>
                             <TextField id="numPlayers" label="Number of players" value={this.state.numPlayers} onChange={this.handleNumPlayersFieldChange} helperText="Please enter the number of players" />
                         </Box>
                         <Box m={2} pt={3}>
                             <Button variant="contained" color="secondary" onClick={this.generate.bind(this)}>SETUP GAME</Button>
                         </Box> </div>}
                 </div><br /><br />
-                <Box m={2}>
-                    <Button variant="contained" color="primary" onClick={this.logout.bind(this)} >Logout</Button>
-                </Box>
-                <Box m={2}>
-                    <Button variant="contained" color="primary" onClick={this.resetGame.bind(this)} >Reset Game</Button>
-                </Box>
                 <Box>
-                    <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} >Get Cards</Button>
+                    <Button size="large" variant="outlined" color="primary" >Hello, {this.props.userState.displayName}</Button>
+                </Box>
+                <div className="logout_reset" style={divStyle}>
+                    <Box m={2}>
+                        <Button variant="contained" color="primary" onClick={this.logout.bind(this)} >Logout</Button>
+                    </Box>
+                    <Box m={2}>
+                        <Button variant="contained" color="primary" onClick={this.resetGame.bind(this)} >Reset Game</Button>
+                    </Box>
+                </div>
+                <Box m={2}>
+                    <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} >See Cards</Button>
+                </Box>
+                <Box m={2}>
+                    <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} >Pack</Button>
+                </Box>
+                <Box m={2}>
+                    <Button variant="contained" color="secondary" onClick={this.showCards.bind(this)} >Show Cards</Button>
                 </Box>
                 <h2>Your cards are:</h2>
-                {this.renderCards()}
-            </div>
+                {this.renderCards()
+                }
+                < h2 > Messages:</h2 >
+                {this.getMessages()}
+            </div >
         );
     }
 }

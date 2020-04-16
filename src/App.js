@@ -34,7 +34,7 @@ class App extends Component {
     return (
       <div className="App">
         <img src={teenPattiLogo} width="200" alt="logo-image"/>
-        <br /> <br /> <br />
+        <br />
         <div>
           {this.state.user ? (<Cards userState={this.state.user} />) : (<Login/>)}
         </div>
