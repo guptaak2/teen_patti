@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "02177541299a6435cff2def619c33341",
+    "revision": "40579cbab56310acd100fdbae6b3cb9c",
     "url": "/teen_patti/index.html"
   },
   {
-    "revision": "9488c6c1c0c6b70a8828",
+    "revision": "24155f03481c85290e5b",
     "url": "/teen_patti/static/css/main.50dee920.chunk.css"
   },
   {
-    "revision": "347ea3c0a207e57f0afe",
-    "url": "/teen_patti/static/js/2.09e67b5f.chunk.js"
+    "revision": "e2a2754deecc340234e6",
+    "url": "/teen_patti/static/js/2.bdd29f95.chunk.js"
   },
   {
     "revision": "86414f6aa96d78f04460ff2dda206a29",
-    "url": "/teen_patti/static/js/2.09e67b5f.chunk.js.LICENSE.txt"
+    "url": "/teen_patti/static/js/2.bdd29f95.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "9488c6c1c0c6b70a8828",
-    "url": "/teen_patti/static/js/main.fe0bfe3d.chunk.js"
+    "revision": "24155f03481c85290e5b",
+    "url": "/teen_patti/static/js/main.7d92b9bd.chunk.js"
   },
   {
     "revision": "bba76384757b3d75c3b8",
