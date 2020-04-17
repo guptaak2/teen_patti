@@ -71,6 +71,10 @@ class Cards extends Component {
     }
 
     logout() {
+        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
+            isLoggedIn: false
+        })
+
         fire.auth().signOut().then((result) => {
             this.setState({
                 userState: null
@@ -88,6 +92,12 @@ class Cards extends Component {
 
         this.setState((state) => {
             return { gameSet: !state.gameSet }
+        })
+
+        this.setState({
+            firstCard: [],
+            secondCard: [],
+            thirdCard: [],
         })
 
         var updates = {};
@@ -123,18 +133,26 @@ class Cards extends Component {
         var i = 0;
         fire.database().ref('users').child('list').once('value', snap => {
             snap.forEach((user) => {
-                fire.database().ref('users/list/' + user.key).update({ cards: cardsTrips[i] })
-                i++;
+                console.log(user.val().isLoggedIn);
+                if (user.val().isLoggedIn) {
+                    fire.database().ref('users/list/' + user.key).update({ cards: cardsTrips[i] })
+                    i++;
+                }
             })
         });
     }
 
     getCards(e) {
         e.preventDefault()
-        fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards').once('value').then((snap => {
-            this.setState({ cardIndicies: snap.val() })
-            this.getRealCards()
-        }));
+        console.log(this.state.gameSet)
+        if (this.state.gameSet) {
+            fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards').once('value').then((snap => {
+                this.setState({ cardIndicies: snap.val() })
+                this.getRealCards()
+            }));
+        } else {
+            console.log("Trying to get cards when you're not in a game")
+        }
     }
 
     getRealCards() {

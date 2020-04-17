@@ -27,14 +27,6 @@ class Login extends Component {
 		};
 	}
 
-	componentDidMount() {
-		console.log("componentDidMount()")
-	}
-
-	componentDidUpdate() {
-		console.log()
-	}
-
 	getUserData() {
 		var userId = fire.auth().currentUser.uid;
 		console.log(userId)
@@ -47,6 +39,11 @@ class Login extends Component {
 	login(e) {
 		e.preventDefault();
 		fire.auth().signInWithEmailAndPassword(this.state.email, this.state.password).then((u) => {
+			fire.database().ref('users/list/' + fire.auth().currentUser.uid).set({
+				email: this.state.email,
+				name: this.state.firstName,
+				isLoggedIn: true
+			});
 			this.setState({
 				emailError: false,
 				emailHelperText: 'Please enter your email',
@@ -108,7 +105,8 @@ class Login extends Component {
 		fire.database().ref().update(updates);
 		fire.database().ref('users/list/' + userId).set({
 			email: this.state.email,
-			name: this.state.firstName
+			name: this.state.firstName,
+			isLoggedIn: true
 		}, function (error) {
 			if (error) {
 				console.log("User save error")
