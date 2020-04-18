@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "4a8ced2e45d3a15bd94605a21f42e137",
+    "revision": "1ba3c7787d6926decd1f19ae1f48bac2",
     "url": "/teen_patti/index.html"
   },
   {
-    "revision": "883a798d3f47591cb474",
-    "url": "/teen_patti/static/css/main.50dee920.chunk.css"
+    "revision": "da50b9c4eb544f63d918",
+    "url": "/teen_patti/static/css/main.cb1fa1b3.chunk.css"
   },
   {
-    "revision": "279d5bd30bc2d6a621c6",
-    "url": "/teen_patti/static/js/2.09c5a0ae.chunk.js"
+    "revision": "452817fad72746986b42",
+    "url": "/teen_patti/static/js/2.c26b59d4.chunk.js"
   },
   {
     "revision": "86414f6aa96d78f04460ff2dda206a29",
-    "url": "/teen_patti/static/js/2.09c5a0ae.chunk.js.LICENSE.txt"
+    "url": "/teen_patti/static/js/2.c26b59d4.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "883a798d3f47591cb474",
-    "url": "/teen_patti/static/js/main.4fe3798c.chunk.js"
+    "revision": "da50b9c4eb544f63d918",
+    "url": "/teen_patti/static/js/main.51229e1e.chunk.js"
   },
   {
     "revision": "bba76384757b3d75c3b8",
