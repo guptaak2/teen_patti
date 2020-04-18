@@ -14,7 +14,6 @@ class Login extends Component {
 		this.handleEmailFieldChange = this.handleEmailFieldChange.bind(this)
 		this.handlePasswordFieldChange = this.handlePasswordFieldChange.bind(this)
 		this.handleFirstNameFieldChange = this.handleFirstNameFieldChange.bind(this)
-		this.getUserData = this.getUserData.bind(this)
 		this.writeNewUser = this.writeNewUser.bind(this)
 		this.state = {
 			firstName: '',
@@ -27,22 +26,14 @@ class Login extends Component {
 		};
 	}
 
-	getUserData() {
-		var userId = fire.auth().currentUser.uid;
-		console.log(userId)
-		return fire.database().ref('users/list/' + userId).once('value').then(function (snapshot) {
-			var username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
-			console.log(username)
-		});
-	}
-
 	login(e) {
 		e.preventDefault();
 		fire.auth().signInWithEmailAndPassword(this.state.email, this.state.password).then((u) => {
 			fire.database().ref('users/list/' + fire.auth().currentUser.uid).set({
 				email: this.state.email,
 				name: this.state.firstName,
-				isLoggedIn: true
+				isLoggedIn: true,
+				status: 'BLIND'
 			});
 			this.setState({
 				emailError: false,
@@ -62,6 +53,13 @@ class Login extends Component {
 			} else if (error.code == 'auth/invalid-email') {
 				this.setState({
 					emailHelperText: "Invalid email. Please try again",
+					emailError: true,
+					passwordError: false,
+					passwordHelperText: 'Please enter your password'
+				})
+			} else if (error.code == 'auth/user-not-found') {
+				this.setState({
+					emailHelperText: "This user does not exist. Please signup.",
 					emailError: true,
 					passwordError: false,
 					passwordHelperText: 'Please enter your password'
@@ -106,7 +104,8 @@ class Login extends Component {
 		fire.database().ref('users/list/' + userId).set({
 			email: this.state.email,
 			name: this.state.firstName,
-			isLoggedIn: true
+			isLoggedIn: true,
+			status: 'BLIND'
 		}, function (error) {
 			if (error) {
 				console.log("User save error")
