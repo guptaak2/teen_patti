@@ -33,6 +33,7 @@ class Cards extends Component {
         this.showCards = this.showCards.bind(this);
         this.updateTable = this.updateTable.bind(this);
         this.scrollToBottom = this.scrollToBottom.bind(this);
+        this.getCellColor = this.getCellColor.bind(this);
 
         this.state = {
             cardIndicies: [],
@@ -140,7 +141,6 @@ class Cards extends Component {
             fire.database().ref('users').child('list').once('value').then((snap) => {
                 snap.forEach((user) => {
                     if (user.val().isLoggedIn) {
-                        console.log("Reset game: This might be triggering the update")
                         fire.database().ref('users/list/' + user.key).update({
                             cards: null,
                             status: 'BLIND',
@@ -357,7 +357,6 @@ class Cards extends Component {
     renderStats() {
         const stats = this.state.playerStats
         const trimmedStats = stats.slice(Math.max(stats.length - parseInt(this.state.numPlayers), 0))
-        console.log("Render stats: " + stats)
         return (
             <div style={table}>
                 <table align="center" border="1" width="500px">
@@ -373,7 +372,7 @@ class Cards extends Component {
                             return (
                                 <tr key={index}>
                                     <td><h3>{row.name}</h3></td>
-                                    <td><h3>{row.status}</h3></td>
+                                    <td style={{'background-color': this.getCellColor(row)}}><h3>{row.status}</h3></td>
                                     <td><h3>{row.message}</h3></td>
                                 </tr>
                             )
@@ -381,6 +380,16 @@ class Cards extends Component {
                     </tbody>
                 </table>
             </div>)
+    }
+
+    getCellColor(row) {
+        if (row.status == 'BLIND') {
+            return 'red'
+        } else if (row.status == 'PACK') {
+            return 'green'
+        } else {
+            return 'yellow'
+        }
     }
 
     render() {
