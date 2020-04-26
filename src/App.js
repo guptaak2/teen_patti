@@ -35,7 +35,7 @@ class App extends Component {
         <img src={teenPattiLogo} width="200" alt="logo-image"/>
         <br />
         <div>
-          {this.state.user ? (<Cards userState={this.state.user} />) : (<Login/>)}
+          {this.state.user ? (<Cards userState={this.state.user}/>) : (<Login/>)}
         </div>
       </div>
     );
