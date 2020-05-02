@@ -34,6 +34,7 @@ class Cards extends Component {
         this.updateTable = this.updateTable.bind(this);
         this.scrollToBottom = this.scrollToBottom.bind(this);
         this.getCellColor = this.getCellColor.bind(this);
+        this.getCardsMessage = this.getCardsMessage.bind(this);
 
         this.state = {
             cardIndicies: [],
@@ -83,6 +84,7 @@ class Cards extends Component {
             this.updateTable()
         })
 
+        this.updateTable()
         this.scrollToBottom()
     }
 
@@ -110,8 +112,10 @@ class Cards extends Component {
 
     logout() {
         fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
+            cards: null,
             isLoggedIn: false,
-            status: 'BLIND'
+            status: 'BLIND',
+            showCardsMessage: ''
         }).then((u) => {
             fire.auth().signOut().then((result) => {
                 this.setState({
@@ -134,6 +138,7 @@ class Cards extends Component {
             secondCard: [],
             thirdCard: [],
             fourthCard: [],
+            message: '',
             playerStats: []
         })
 
@@ -154,10 +159,12 @@ class Cards extends Component {
 
     generate(e) {
         e.preventDefault()
-        // update isGameSet to database
+        // update isGameSet, numCards and numPlayers to database
         var updates = {};
         var ref = fire.database().ref('users/')
         updates['isGameSet'] = true;
+        updates['numCardsPerPlayer'] = this.state.numCards
+        updates['numPlayers'] = this.state.numPlayers
         ref.update(updates).then((u) => {
             this.setState({
                 gameSet: true
@@ -274,26 +281,16 @@ class Cards extends Component {
     handleNumPlayersFieldChange(e) {
         e.preventDefault()
         const num = e.target.value
-        // update numPlayers to database
-        var updates = {};
-        updates['users/' + 'numPlayers'] = num;
-        fire.database().ref().update(updates).then((u) => {
-            this.setState({
-                numPlayers: num
-            })
+        this.setState({
+            numPlayers: num
         })
     }
 
     handleNumCardsFieldChange(e) {
         e.preventDefault()
         const num = e.target.value
-        // update numCards to database
-        var updates = {};
-        updates['users/' + 'numCardsPerPlayer'] = num;
-        fire.database().ref().update(updates).then((u) => {
-            this.setState({
-                numCards: num
-            })
+        this.setState({
+            numCards: num
         })
     }
 
@@ -304,54 +301,13 @@ class Cards extends Component {
 
     showCards(e) {
         e.preventDefault()
-        const cardsNum = this.state.numCards
-        var msg = '';
-        if (cardsNum == 1) {
-            msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}`
-        } else if (cardsNum == 2) {
-            msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit} ${this.state.secondCard.card} ${this.state.secondCard.suit}`
-        } else if (cardsNum == 3) {
-            msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit} ${this.state.secondCard.card} ${this.state.secondCard.suit} ${this.state.thirdCard.card} ${this.state.thirdCard.suit}`
-        } else if (cardsNum == 4) {
-            msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit} ${this.state.secondCard.card} ${this.state.secondCard.suit} ${this.state.thirdCard.card} ${this.state.thirdCard.suit} ${this.state.fourthCard.card} ${this.state.fourthCard.suit}`
-        }
+        var msg = this.getCardsMessage()
 
         this.setState({ message: msg })
         fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
             status: 'SHOW',
             showCardsMessage: msg
         })
-    }
-
-    renderCards() {
-        const cardsNum = this.state.numCards
-        return (
-            <div style={horizontal}>
-                {cardsNum == 1 &&
-                    <div style={horizontal}><h2>{this.state.firstCard.card} {this.state.firstCard.suit}</h2></div>
-                }
-
-                {cardsNum == 2 &&
-                    <div style={horizontal}>
-                        <h2>{this.state.firstCard.card} {this.state.firstCard.suit}</h2><h2>{this.state.secondCard.card} {this.state.secondCard.suit}</h2>
-                    </div>
-                }
-
-                {
-                    cardsNum == 3 &&
-                    <div style={horizontal}>
-                        <h2>{this.state.firstCard.card} {this.state.firstCard.suit}</h2> <h2>{this.state.secondCard.card} {this.state.secondCard.suit}</h2> <h2>{this.state.thirdCard.card} {this.state.thirdCard.suit}</h2>
-                    </div>
-                }
-
-                {
-                    cardsNum == 4 &&
-                    <div style={horizontal}>
-                        <h2>{this.state.firstCard.card} {this.state.firstCard.suit}</h2><h2>{this.state.secondCard.card} {this.state.secondCard.suit}</h2><h2>{this.state.thirdCard.card} {this.state.thirdCard.suit}</h2><h2>{this.state.fourthCard.card} {this.state.fourthCard.suit}</h2>
-                    </div>
-                }
-            </div >
-        )
     }
 
     renderStats() {
@@ -372,7 +328,7 @@ class Cards extends Component {
                             return (
                                 <tr key={index}>
                                     <td><h3>{row.name}</h3></td>
-                                    <td style={{'background-color': this.getCellColor(row)}}><h3>{row.status}</h3></td>
+                                    <td style={{ 'background-color': this.getCellColor(row) }}><h3><font color="#FFF">{row.status}</font></h3></td>
                                     <td><h3>{row.message}</h3></td>
                                 </tr>
                             )
@@ -382,14 +338,12 @@ class Cards extends Component {
             </div>)
     }
 
-    getCellColor(row) {
-        if (row.status == 'BLIND') {
-            return 'red'
-        } else if (row.status == 'PACK') {
-            return 'green'
-        } else {
-            return 'yellow'
-        }
+    renderCards() {
+        return (
+            <div style={horizontal}>
+                <h2>{this.getCardsMessage()}</h2>
+            </div >
+        )
     }
 
     render() {
@@ -423,7 +377,7 @@ class Cards extends Component {
                         <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} >See Cards</Button>
                     </Box>
                     <Box m={2}>
-                        <Button variant="contained" color="primary" onClick={this.packed.bind(this)} >Pack</Button>
+                        <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} >Pack</Button>
                     </Box>
                     <Box m={2}>
                         <Button variant="contained" color="primary" onClick={this.showCards.bind(this)} >Show Cards</Button>
@@ -438,6 +392,35 @@ class Cards extends Component {
                 </div>
             </div >
         );
+    }
+
+    // Util methods
+    getCellColor(row) {
+        if (row.status == 'BLIND') {
+            return 'royalblue'
+        } else if (row.status == 'PACK') {
+            return 'crimson'
+        } else {
+            return 'green'
+        }
+    }
+
+    getCardsMessage() {
+        const cardsNum = this.state.numCards
+        var msg = '';
+        if (this.state.gameSet && this.state.cardIndicies.length > 0) {
+            if (cardsNum == 1) {
+                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}`
+            } else if (cardsNum == 2) {
+                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}`
+            } else if (cardsNum == 3) {
+                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}, ${this.state.thirdCard.card} ${this.state.thirdCard.suit}`
+            } else if (cardsNum == 4) {
+                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}, ${this.state.thirdCard.card} ${this.state.thirdCard.suit}, ${this.state.fourthCard.card} ${this.state.fourthCard.suit}`
+            }
+        }
+
+        return msg
     }
 }
 

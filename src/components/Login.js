@@ -3,8 +3,6 @@ import { TextField, Button } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import fire from '../config/Fire';
 
-var cards = [];
-
 class Login extends Component {
 	constructor(props) {
 		super(props);
