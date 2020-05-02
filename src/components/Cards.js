@@ -139,7 +139,8 @@ class Cards extends Component {
             thirdCard: [],
             fourthCard: [],
             message: '',
-            playerStats: []
+            playerStats: [],
+            cardIndicies: []
         })
 
         ref.update(updates).then((u) => {
@@ -380,7 +381,7 @@ class Cards extends Component {
                         <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} >Pack</Button>
                     </Box>
                     <Box m={2}>
-                        <Button variant="contained" color="primary" onClick={this.showCards.bind(this)} >Show Cards</Button>
+                        <Button style={{ backgroundColor: 'green' }} variant="contained" color="primary" onClick={this.showCards.bind(this)} >Show Cards</Button>
                     </Box>
                 </div>
                 <div style={horizontal}>
@@ -397,9 +398,11 @@ class Cards extends Component {
     // Util methods
     getCellColor(row) {
         if (row.status == 'BLIND') {
-            return 'royalblue'
+            return 'black'
         } else if (row.status == 'PACK') {
             return 'crimson'
+        } else if (row.status == 'SEEN') {
+            return 'royalblue'
         } else {
             return 'green'
         }
