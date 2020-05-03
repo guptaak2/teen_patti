@@ -48,7 +48,10 @@ class Cards extends Component {
             numCards: 3,
             userState: this.props.userState,
             displayName: '',
-            gameSet: true
+            gameSet: true,
+            enableSee: false,
+            enablePack: false,
+            enableShow: false
         }
     }
 
@@ -75,6 +78,7 @@ class Cards extends Component {
             var snapVal = snap.val()
             this.setState({
                 gameSet: snapVal.isGameSet,
+                enableSee: snapVal.isGameSet,
                 numCards: parseInt(snapVal.numCardsPerPlayer),
                 numPlayers: parseInt(snapVal.numPlayers)
             })
@@ -215,6 +219,7 @@ class Cards extends Component {
                 this.setState({ cardIndicies: snap.val() })
                 this.getRealCards()
             })).then((u) => {
+                this.setState({ enablePack: true, enableShow: true, enableSee: false })
                 fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'SEEN' })
             })
         } else {
@@ -297,14 +302,16 @@ class Cards extends Component {
 
     packed(e) {
         e.preventDefault()
-        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'PACK' })
+        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'PACK' }).then((u) => {
+            this.setState({ enableSee: false, enableShow: false, enablePack: false })
+        })
     }
 
     showCards(e) {
         e.preventDefault()
         var msg = this.getCardsMessage()
 
-        this.setState({ message: msg })
+        this.setState({ message: msg, enableSee: false, enablePack: false, enableShow: false })
         fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
             status: 'SHOW',
             showCardsMessage: msg
@@ -375,13 +382,13 @@ class Cards extends Component {
                 </div>
                 <div className="logout_reset" style={divStyle}>
                     <Box m={2}>
-                        <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} >See Cards</Button>
+                        <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} disabled={!this.state.enableSee} >See Cards</Button>
                     </Box>
                     <Box m={2}>
-                        <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} >Pack</Button>
+                        <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} disabled={!this.state.enablePack} >Pack</Button>
                     </Box>
                     <Box m={2}>
-                        <Button style={{ backgroundColor: 'green' }} variant="contained" color="primary" onClick={this.showCards.bind(this)} >Show Cards</Button>
+                        <Button style={{ backgroundColor: this.state.show ? 'green' : 'colorDisabled'}} variant="contained" color="primary" onClick={this.showCards.bind(this)} disabled={!this.state.enableShow} >Show Cards</Button>
                     </Box>
                 </div>
                 <div style={horizontal}>

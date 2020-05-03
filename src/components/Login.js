@@ -91,6 +91,13 @@ class Login extends Component {
 					passwordError: true,
 					passwordHelperText: 'Password should be at least 6 characters'
 				})
+			} else if (error.code == 'auth/email-already-in-use') {
+				this.setState({
+					emailError: true,
+					emailHelperText: 'This email address is already in use',
+					passwordError: false,
+					passwordHelperText: 'Please enter your password'
+				})
 			}
 		})
 	}
@@ -154,9 +161,9 @@ class Login extends Component {
 						<Box m={2} pt={3}>
 							<Button variant="contained" color="primary" onClick={this.login.bind(this)} >LOGIN</Button>
 						</Box>
-						<Box>
+						{/* <Box>
 							<Button className="btn btn-success" variant="contained" color="primary" onClick={this.signup.bind(this)} >SIGN UP</Button>
-						</Box>
+						</Box> */}
 					</form>
 				</div>
 			</div>
