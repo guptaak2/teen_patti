@@ -1,23 +1,23 @@
 {
   "files": {
     "main.css": "/teen_patti/static/css/main.cb1fa1b3.chunk.css",
-    "main.js": "/teen_patti/static/js/main.abf2341e.chunk.js",
-    "main.js.map": "/teen_patti/static/js/main.abf2341e.chunk.js.map",
+    "main.js": "/teen_patti/static/js/main.e94eb961.chunk.js",
+    "main.js.map": "/teen_patti/static/js/main.e94eb961.chunk.js.map",
     "runtime-main.js": "/teen_patti/static/js/runtime-main.78c698ac.js",
     "runtime-main.js.map": "/teen_patti/static/js/runtime-main.78c698ac.js.map",
-    "static/js/2.3924cb88.chunk.js": "/teen_patti/static/js/2.3924cb88.chunk.js",
-    "static/js/2.3924cb88.chunk.js.map": "/teen_patti/static/js/2.3924cb88.chunk.js.map",
+    "static/js/2.6597daa8.chunk.js": "/teen_patti/static/js/2.6597daa8.chunk.js",
+    "static/js/2.6597daa8.chunk.js.map": "/teen_patti/static/js/2.6597daa8.chunk.js.map",
     "index.html": "/teen_patti/index.html",
-    "precache-manifest.2d3c42edee51bb1aa7afe6f2f126cf62.js": "/teen_patti/precache-manifest.2d3c42edee51bb1aa7afe6f2f126cf62.js",
+    "precache-manifest.a203d9f0feef7618fec8aeda4876b329.js": "/teen_patti/precache-manifest.a203d9f0feef7618fec8aeda4876b329.js",
     "service-worker.js": "/teen_patti/service-worker.js",
     "static/css/main.cb1fa1b3.chunk.css.map": "/teen_patti/static/css/main.cb1fa1b3.chunk.css.map",
-    "static/js/2.3924cb88.chunk.js.LICENSE.txt": "/teen_patti/static/js/2.3924cb88.chunk.js.LICENSE.txt",
+    "static/js/2.6597daa8.chunk.js.LICENSE.txt": "/teen_patti/static/js/2.6597daa8.chunk.js.LICENSE.txt",
     "static/media/logo.png": "/teen_patti/static/media/logo.f67306a7.png"
   },
   "entrypoints": [
     "static/js/runtime-main.78c698ac.js",
-    "static/js/2.3924cb88.chunk.js",
+    "static/js/2.6597daa8.chunk.js",
     "static/css/main.cb1fa1b3.chunk.css",
-    "static/js/main.abf2341e.chunk.js"
+    "static/js/main.e94eb961.chunk.js"
   ]
 }
