@@ -63,7 +63,16 @@ class Cards extends Component {
         cardsStats.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }
 
+    setupBeforeUnloadListener = () => {
+        window.addEventListener("beforeunload", (ev) => {
+            ev.preventDefault();
+            return this.logout();
+        });
+    };
+
     componentDidMount() {
+        this.setupBeforeUnloadListener();
+
         fire.auth().onAuthStateChanged((user) => {
             if (user) {
                 this.setState({
