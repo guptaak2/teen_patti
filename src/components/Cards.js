@@ -34,29 +34,28 @@ class Cards extends Component {
         this.updateTable = this.updateTable.bind(this);
         this.scrollToBottom = this.scrollToBottom.bind(this);
         this.getCellColor = this.getCellColor.bind(this);
-        this.getCardsMessage = this.getCardsMessage.bind(this);
 
         this.state = {
-            cardIndicies: [],
+            cardIndicies: this.getCardIndicies(),
             firstCard: [],
             secondCard: [],
             thirdCard: [],
             fourthCard: [],
             playerStats: [],
-            message: '',
             numPlayers: 0,
+            numPackedPlayers: 0,
             numCards: 3,
             userState: this.props.userState,
             displayName: '',
             gameSet: true,
-            enableSee: false,
-            enablePack: false,
-            enableShow: false
+            enableSee: this.getEnableSee(),
+            enablePack: this.getEnablePack(),
+            enableShow: this.getEnableShow(),
+            firstImgUrl: this.getFirstCardURL(),
+            secondImgUrl: this.getSecondCardURL(),
+            thirdImgUrl: this.getThirdCardURL(),
+            fourthImgUrl: this.getFourthCardURL()
         }
-    }
-
-    componentDidUpdate() {
-        this.scrollToBottom()
     }
 
     scrollToBottom() {
@@ -78,9 +77,11 @@ class Cards extends Component {
             var snapVal = snap.val()
             this.setState({
                 gameSet: snapVal.isGameSet,
-                enableSee: snapVal.isGameSet,
                 numCards: parseInt(snapVal.numCardsPerPlayer),
-                numPlayers: parseInt(snapVal.numPlayers)
+                numPlayers: parseInt(snapVal.numPlayers),
+                numPackedPlayers: parseInt(snapVal.numPackedPlayers)
+            }, () => {
+                this.updateTable()
             })
         })
 
@@ -89,20 +90,29 @@ class Cards extends Component {
         })
 
         this.updateTable()
-        this.scrollToBottom()
     }
 
     updateTable() {
         this.setState({ playerStats: [] })
+        if (this.state.gameSet && (parseInt(this.state.numPlayers) - parseInt(this.state.numPackedPlayers) == 2)) {
+            if (this.getEnablePack()) {
+                this.storeEnableShow(true)
+            }
+        } else if (!this.state.gameSet) {
+            localStorage.clear()
+        }
+
         fire.database().ref('users').child('list').once('value').then((snap) => {
             snap.forEach((user) => {
                 if (user.val().isLoggedIn) {
                     var name = user.val().name
                     var status = user.val().status
-                    var message = user.val().showCardsMessage
-                    if (status == 'SHOW') {
+                    if (user.val().cards != null) {
+                        var urls = user.val().cards.urls
+                    }
+                    if (status == 'SHOW' && urls != null) {
                         this.setState({
-                            playerStats: this.state.playerStats.concat({ name, status, message })
+                            playerStats: this.state.playerStats.concat({ name, status, urls })
                         })
                     } else {
                         this.setState({
@@ -115,11 +125,11 @@ class Cards extends Component {
     }
 
     logout() {
+        localStorage.clear()
         fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
             cards: null,
             isLoggedIn: false,
-            status: 'BLIND',
-            showCardsMessage: ''
+            status: 'BLIND'
         }).then((u) => {
             fire.auth().signOut().then((result) => {
                 this.setState({
@@ -131,10 +141,12 @@ class Cards extends Component {
 
     resetGame(e) {
         e.preventDefault()
+        localStorage.clear()
         // update isGameSet to database after reset game
         var updates = {};
         var ref = fire.database().ref('users/')
         updates['isGameSet'] = false;
+        updates['numPackedPlayers'] = 0;
 
         this.setState({
             gameSet: false,
@@ -142,10 +154,18 @@ class Cards extends Component {
             secondCard: [],
             thirdCard: [],
             fourthCard: [],
-            message: '',
             playerStats: [],
-            cardIndicies: []
+            cardIndicies: [],
+            numPackedPlayers: 0,
+            firstImgUrl: '',
+            secondImgUrl: '',
+            thirdImgUrl: '',
+            fourthImgUrl: ''
         })
+
+        this.storeEnableSee(true)
+        this.storeEnablePack(false)
+        this.storeEnableShow(false)
 
         ref.update(updates).then((u) => {
             fire.database().ref('users').child('list').once('value').then((snap) => {
@@ -153,8 +173,7 @@ class Cards extends Component {
                     if (user.val().isLoggedIn) {
                         fire.database().ref('users/list/' + user.key).update({
                             cards: null,
-                            status: 'BLIND',
-                            showCardsMessage: ''
+                            status: 'BLIND'
                         })
                     }
                 })
@@ -216,106 +235,56 @@ class Cards extends Component {
         e.preventDefault()
         if (this.state.gameSet == true) {
             fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards').once('value').then((snap => {
-                this.setState({ cardIndicies: snap.val() })
+                this.storeCardIndicies(snap.val())
                 this.getRealCards()
             })).then((u) => {
-                this.setState({ enablePack: true, enableShow: true, enableSee: false })
+                this.storeEnableSee(false)
+                this.storeEnablePack(true)
+                this.storeEnableShow(false)
                 fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'SEEN' })
             })
         } else {
-            console.log("Trying to get cards when you're not in a game")
+            window.confirm("You need to setup a game before seeing your cards")
         }
     }
 
     getRealCards() {
         const cardsNum = this.state.numCards
         if (cardsNum == 1) {
-            fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-                this.setState({ firstCard: snap.val() })
-            }));
+            this.getFirstRealCard()
         } else if (cardsNum == 2) {
-            fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-                this.setState({ firstCard: snap.val() })
-            })).then((u) => {
-                fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
-                    this.setState({ secondCard: snap.val() })
-                }));
-            });
+            this.getSecondRealCard()
         } else if (cardsNum == 3) {
-            fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-                this.setState({ firstCard: snap.val() })
-            })).then((u) => {
-                fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
-                    this.setState({ secondCard: snap.val() })
-                })).then((u) => {
-                    fire.database().ref('cards/' + this.state.cardIndicies[2]).once('value').then((snap => {
-                        this.setState({ thirdCard: snap.val() })
-                    }))
-                });
-            });
+            this.getThirdRealCard()
         } else if (cardsNum == 4) {
-            fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-                this.setState({ firstCard: snap.val() })
-            })).then((u) => {
-                fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
-                    this.setState({ secondCard: snap.val() })
-                })).then((u) => {
-                    fire.database().ref('cards/' + this.state.cardIndicies[2]).once('value').then((snap => {
-                        this.setState({ thirdCard: snap.val() })
-                    })).then((u) => {
-                        fire.database().ref('cards/' + this.state.cardIndicies[3]).once('value').then((snap => {
-                            this.setState({ fourthCard: snap.val() })
-                        }));
-                    });
-                });
-            });
+            this.getFourthRealCard()
         } else {
-            fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
-                this.setState({ firstCard: snap.val() })
-            })).then((u) => {
-                fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
-                    this.setState({ secondCard: snap.val() })
-                })).then((u) => {
-                    fire.database().ref('cards/' + this.state.cardIndicies[2]).once('value').then((snap => {
-                        this.setState({ thirdCard: snap.val() })
-                    }))
-                });
-            });
+            this.getThirdRealCard()
         }
-    }
-
-    handleNumPlayersFieldChange(e) {
-        e.preventDefault()
-        const num = e.target.value
-        this.setState({
-            numPlayers: num
-        })
-    }
-
-    handleNumCardsFieldChange(e) {
-        e.preventDefault()
-        const num = e.target.value
-        this.setState({
-            numCards: num
-        })
     }
 
     packed(e) {
         e.preventDefault()
-        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'PACK' }).then((u) => {
-            this.setState({ enableSee: false, enableShow: false, enablePack: false })
+        this.storePacked()
+        var updates = {};
+        var ref = fire.database().ref('users/')
+        updates['numPackedPlayers'] = parseInt(this.state.numPackedPlayers) + 1;
+        ref.update(updates).then((u) => {
+            this.setState({
+                numPackedPlayers: parseInt(this.state.numPackedPlayers) + 1
+            })
+        }).then((u) => {
+            fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'PACK' })
         })
     }
 
     showCards(e) {
         e.preventDefault()
-        var msg = this.getCardsMessage()
 
-        this.setState({ message: msg, enableSee: false, enablePack: false, enableShow: false })
-        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({
-            status: 'SHOW',
-            showCardsMessage: msg
-        })
+        this.storeEnableSee(false)
+        this.storeEnablePack(false)
+        this.storeEnableShow(false)
+        fire.database().ref('users/list/' + fire.auth().currentUser.uid).update({ status: 'SHOW' })
     }
 
     renderStats() {
@@ -337,7 +306,7 @@ class Cards extends Component {
                                 <tr key={index}>
                                     <td><h3>{row.name}</h3></td>
                                     <td style={{ 'background-color': this.getCellColor(row) }}><h3><font color="#FFF">{row.status}</font></h3></td>
-                                    <td><h3>{row.message}</h3></td>
+                                    <td><h3>{this.getRealCardsMessage(row.urls)}</h3></td>
                                 </tr>
                             )
                         })}
@@ -346,12 +315,49 @@ class Cards extends Component {
             </div>)
     }
 
-    renderCards() {
+    renderCardsPictures() {
         return (
             <div style={horizontal}>
-                <h2>{this.getCardsMessage()}</h2>
-            </div >
+                {this.renderRealCards()}
+            </div>
         )
+    }
+
+    renderRealCards() {
+        const cardsNum = this.state.numCards
+        if (this.state.gameSet && this.getCardIndicies().length > 0) {
+            if (cardsNum == 1) {
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
+                    </div>
+                )
+            } else if (cardsNum == 2) {
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
+                    </div>
+                )
+            } else if (cardsNum == 3) {
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
+                        <img width="100" height="125" alt="third-card" src={this.state.thirdImgUrl || ''}></img>
+                    </div>
+                )
+            } else if (cardsNum == 4) {
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
+                        <img width="100" height="125" alt="third-card" src={this.state.thirdImgUrl || ''}></img>
+                        <img width="100" height="125" alt="fourth-card" src={this.state.fourthImgUrl || ''}></img>
+                    </div>
+                )
+            }
+        }
     }
 
     render() {
@@ -382,24 +388,40 @@ class Cards extends Component {
                 </div>
                 <div className="logout_reset" style={divStyle}>
                     <Box m={2}>
-                        <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} disabled={!this.state.enableSee} >See Cards</Button>
+                        <Button variant="contained" color="primary" onClick={this.getCards.bind(this)} disabled={!this.getEnableSee()} >See Cards</Button>
                     </Box>
                     <Box m={2}>
-                        <Button variant="contained" color="secondary" onClick={this.packed.bind(this)} disabled={!this.state.enablePack} >Pack</Button>
+                        <Button style={{ backgroundColor: 'crimson' }} variant="contained" color="primary" onClick={this.packed.bind(this)} disabled={!this.getEnablePack()} >Pack</Button>
                     </Box>
                     <Box m={2}>
-                        <Button style={{ backgroundColor: this.state.show ? 'green' : 'colorDisabled'}} variant="contained" color="primary" onClick={this.showCards.bind(this)} disabled={!this.state.enableShow} >Show Cards</Button>
+                        <Button style={{ backgroundColor: 'green' }} variant="contained" color="primary" onClick={this.showCards.bind(this)} disabled={!this.getEnableShow()} >Show Cards</Button>
                     </Box>
                 </div>
                 <div style={horizontal}>
                     <h2>Your cards are:</h2>
-                    {this.renderCards()}
+                    {this.renderCardsPictures()}
                 </div>
                 <div ref="cardsStats">
                     {this.renderStats()}
                 </div>
             </div >
         );
+    }
+
+    handleNumPlayersFieldChange(e) {
+        e.preventDefault()
+        const num = e.target.value
+        this.setState({
+            numPlayers: num
+        })
+    }
+
+    handleNumCardsFieldChange(e) {
+        e.preventDefault()
+        const num = e.target.value
+        this.setState({
+            numCards: num
+        })
     }
 
     // Util methods
@@ -415,22 +437,227 @@ class Cards extends Component {
         }
     }
 
-    getCardsMessage() {
+    getRealCardsMessage(urls) {
         const cardsNum = this.state.numCards
-        var msg = '';
-        if (this.state.gameSet && this.state.cardIndicies.length > 0) {
+        if (this.state.gameSet && urls != null && urls.length > 0) {
             if (cardsNum == 1) {
-                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}`
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={urls[0] || ''}></img>
+                    </div>
+                )
             } else if (cardsNum == 2) {
-                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}`
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={urls[0] || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={urls[1] || ''}></img>
+                    </div>
+                )
             } else if (cardsNum == 3) {
-                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}, ${this.state.thirdCard.card} ${this.state.thirdCard.suit}`
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={urls[0] || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={urls[1] || ''}></img>
+                        <img width="100" height="125" alt="third-card" src={urls[2] || ''}></img>
+                    </div>
+                )
             } else if (cardsNum == 4) {
-                msg = msg + `${this.state.firstCard.card} ${this.state.firstCard.suit}, ${this.state.secondCard.card} ${this.state.secondCard.suit}, ${this.state.thirdCard.card} ${this.state.thirdCard.suit}, ${this.state.fourthCard.card} ${this.state.fourthCard.suit}`
+                return (
+                    <div style={horizontal}>
+                        <img width="100" height="125" alt="first-card" src={urls[0] || ''}></img>
+                        <img width="100" height="125" alt="second-card" src={urls[1] || ''}></img>
+                        <img width="100" height="125" alt="third-card" src={urls[2] || ''}></img>
+                        <img width="100" height="125" alt="fourth-card" src={urls[3] || ''}></img>
+                    </div>
+                )
             }
         }
+    }
 
-        return msg
+    getFirstRealCard() {
+        fire.database().ref('cards/' + this.state.cardIndicies[0]).once('value').then((snap => {
+            this.storeFirstCard(snap.val())
+        })).then((u) => {
+            fire.storage().ref('/').child(`${this.getFirstCard().fullName}.png`).getDownloadURL().then(url => {
+                this.storeFirstCardURL(url)
+            }).then((u) => {
+                fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards/urls').update({ 0: this.getFirstCardURL() })
+            })
+        })
+    }
+
+    getSecondRealCard() {
+        this.getFirstRealCard()
+        fire.database().ref('cards/' + this.state.cardIndicies[1]).once('value').then((snap => {
+            this.storeSecondCard(snap.val())
+        })).then((u) => {
+            fire.storage().ref('/').child(`${this.getSecondCard().fullName}.png`).getDownloadURL().then(url => {
+                this.storeSecondCardURL(url)
+            }).then((u) => {
+                fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards/urls').update({ 1: this.getSecondCardURL() })
+            })
+        });
+    }
+
+    getThirdRealCard() {
+        this.getFirstRealCard()
+        this.getSecondRealCard()
+        fire.database().ref('cards/' + this.state.cardIndicies[2]).once('value').then((snap => {
+            this.storeThirdCard(snap.val())
+        })).then((u) => {
+            fire.storage().ref('/').child(`${this.getThirdCard().fullName}.png`).getDownloadURL().then(url => {
+                this.storeThirdCardURL(url)
+            }).then((u) => {
+                fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards/urls').update({ 2: this.getThirdCardURL() })
+            })
+        });
+    }
+
+    getFourthRealCard() {
+        this.getFirstRealCard()
+        this.getSecondRealCard()
+        this.getThirdRealCard()
+        fire.database().ref('cards/' + this.state.cardIndicies[3]).once('value').then((snap => {
+            this.storeFourthCard(snap.val())
+        })).then((u) => {
+            fire.storage().ref('/').child(`${this.getFourthCard().fullName}.png`).getDownloadURL().then(url => {
+                this.storeFourthCardURL(url)
+            }).then((u) => {
+                fire.database().ref('users/list/' + fire.auth().currentUser.uid + '/cards/urls').update({ 3: this.getFourthCardURL() })
+            })
+        });
+    }
+
+    // Store and get from local storage
+    storeCardIndicies(indicies) {
+        localStorage.setItem('cardIndicies', JSON.stringify(indicies))
+        this.setState({ cardIndicies: indicies })
+    }
+
+    storeFirstCard(card) {
+        localStorage.setItem('firstCard', JSON.stringify(card))
+        this.setState({ firstCard: card })
+    }
+
+    storeSecondCard(card) {
+        localStorage.setItem('secondCard', JSON.stringify(card))
+        this.setState({ secondCard: card })
+    }
+
+    storeThirdCard(card) {
+        localStorage.setItem('thirdCard', JSON.stringify(card))
+        this.setState({ thirdCard: card })
+    }
+
+    storeFourthCard(card) {
+        localStorage.setItem('fourthCard', JSON.stringify(card))
+        this.setState({ fourthCard: card })
+    }
+
+    storeFirstCardURL(url) {
+        localStorage.setItem('firstCardURL', JSON.stringify(url))
+        this.setState({ firstImgUrl: url })
+    }
+
+    storeSecondCardURL(url) {
+        localStorage.setItem('secondCardURL', JSON.stringify(url))
+        this.setState({ secondImgUrl: url })
+    }
+
+    storeThirdCardURL(url) {
+        localStorage.setItem('thirdCardURL', JSON.stringify(url))
+        this.setState({ thirdImgUrl: url })
+    }
+
+    storeFourthCardURL(url) {
+        localStorage.setItem('fourthCardURL', JSON.stringify(url))
+        this.setState({ fourthImgUrl: url })
+    }
+
+    storeEnableSee(val) {
+        localStorage.setItem('enableSee', JSON.stringify(val))
+        this.setState({ enableSee: val })
+    }
+
+    storeEnablePack(val) {
+        localStorage.setItem('enablePack', JSON.stringify(val))
+        this.setState({ enablePack: val })
+    }
+
+    storeEnableShow(val) {
+        localStorage.setItem('enableShow', JSON.stringify(val))
+        this.setState({ enableShow: val })
+    }
+
+    storePacked() {
+        localStorage.setItem('enableSee', JSON.stringify(false))
+        localStorage.setItem('enablePack', JSON.stringify(false))
+        localStorage.setItem('enableShow', JSON.stringify(false))
+        this.setState({
+            enableSee: false,
+            enablePack: false,
+            enableShow: false
+        })
+    }
+
+    getCardIndicies() {
+        return JSON.parse(localStorage.getItem('cardIndicies')) || []
+    }
+
+    getFirstCard() {
+        return JSON.parse(localStorage.getItem('firstCard')) || ''
+    }
+
+    getSecondCard() {
+        return JSON.parse(localStorage.getItem('secondCard')) || ''
+    }
+
+    getThirdCard() {
+        return JSON.parse(localStorage.getItem('thirdCard')) || ''
+    }
+
+    getFourthCard() {
+        return JSON.parse(localStorage.getItem('fourthCard')) || ''
+    }
+
+    getFirstCardURL() {
+        return JSON.parse(localStorage.getItem('firstCardURL')) || ''
+    }
+
+    getSecondCardURL() {
+        return JSON.parse(localStorage.getItem('secondCardURL')) || ''
+    }
+
+    getThirdCardURL() {
+        return JSON.parse(localStorage.getItem('thirdCardURL')) || ''
+    }
+
+    getFourthCardURL() {
+        return JSON.parse(localStorage.getItem('fourthCardURL')) || ''
+    }
+
+    getEnableSee() {
+        if (JSON.parse(localStorage.getItem('enableSee') == null)) {
+            return true
+        } else {
+            return JSON.parse(localStorage.getItem('enableSee'))
+        }
+    }
+
+    getEnablePack() {
+        if (JSON.parse(localStorage.getItem('enablePack') == null)) {
+            return false
+        } else {
+            return JSON.parse(localStorage.getItem('enablePack'))
+        }
+    }
+
+    getEnableShow() {
+        if (JSON.parse(localStorage.getItem('enableShow') == null)) {
+            return false
+        } else {
+            return JSON.parse(localStorage.getItem('enableShow'))
+        }
     }
 }
 
