@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/teen_patti/static/css/main.cb1fa1b3.chunk.css",
-    "main.js": "/teen_patti/static/js/main.bef9d98b.chunk.js",
-    "main.js.map": "/teen_patti/static/js/main.bef9d98b.chunk.js.map",
+    "main.js": "/teen_patti/static/js/main.18f28b9d.chunk.js",
+    "main.js.map": "/teen_patti/static/js/main.18f28b9d.chunk.js.map",
     "runtime-main.js": "/teen_patti/static/js/runtime-main.78c698ac.js",
     "runtime-main.js.map": "/teen_patti/static/js/runtime-main.78c698ac.js.map",
     "static/js/2.af9a99d6.chunk.js": "/teen_patti/static/js/2.af9a99d6.chunk.js",
     "static/js/2.af9a99d6.chunk.js.map": "/teen_patti/static/js/2.af9a99d6.chunk.js.map",
     "index.html": "/teen_patti/index.html",
-    "precache-manifest.7eeba6ac287ac7482f5a1071e0b984f4.js": "/teen_patti/precache-manifest.7eeba6ac287ac7482f5a1071e0b984f4.js",
+    "precache-manifest.1a0db0d1f7ed3cd056cd7da32b52088d.js": "/teen_patti/precache-manifest.1a0db0d1f7ed3cd056cd7da32b52088d.js",
     "service-worker.js": "/teen_patti/service-worker.js",
     "static/css/main.cb1fa1b3.chunk.css.map": "/teen_patti/static/css/main.cb1fa1b3.chunk.css.map",
     "static/js/2.af9a99d6.chunk.js.LICENSE.txt": "/teen_patti/static/js/2.af9a99d6.chunk.js.LICENSE.txt",
@@ -19,6 +19,6 @@
     "static/js/runtime-main.78c698ac.js",
     "static/js/2.af9a99d6.chunk.js",
     "static/css/main.cb1fa1b3.chunk.css",
-    "static/js/main.bef9d98b.chunk.js"
+    "static/js/main.18f28b9d.chunk.js"
   ]
 }
