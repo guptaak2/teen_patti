@@ -31,8 +31,7 @@ class Login extends Component {
 				email: this.state.email,
 				name: this.state.firstName,
 				isLoggedIn: true,
-				status: 'BLIND',
-				showCardsMessage: ''
+				status: 'BLIND'
 			});
 			this.setState({
 				emailError: false,
@@ -111,8 +110,7 @@ class Login extends Component {
 			email: this.state.email,
 			name: this.state.firstName,
 			isLoggedIn: true,
-			status: 'BLIND',
-			showCardsMessage: ''
+			status: 'BLIND'
 		}, function (error) {
 			if (error) {
 				console.log("User save error")
