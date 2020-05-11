@@ -3,6 +3,7 @@ import { TextField, Button } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import fire from 'firebase'
 import '../App.css';
+import backCardImg from '../images/backCardImg.png'
 
 const divStyle = {
     display: 'flex',
@@ -63,16 +64,7 @@ class Cards extends Component {
         cardsStats.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }
 
-    setupBeforeUnloadListener = () => {
-        window.addEventListener("beforeunload", (ev) => {
-            ev.preventDefault();
-            return this.logout();
-        });
-    };
-
     componentDidMount() {
-        this.setupBeforeUnloadListener();
-
         fire.auth().onAuthStateChanged((user) => {
             if (user) {
                 this.setState({
@@ -338,31 +330,31 @@ class Cards extends Component {
             if (cardsNum == 1) {
                 return (
                     <div style={horizontal}>
-                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
+                        <img width="100" height="125" alt="first-card" src={this.getFirstCardURL()}></img>
                     </div>
                 )
             } else if (cardsNum == 2) {
                 return (
                     <div style={horizontal}>
-                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
-                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
+                        <img width="100" height="125" alt="first-card" src={this.getFirstCardURL()}></img>
+                        <img width="100" height="125" alt="second-card" src={this.getSecondCardURL()}></img>
                     </div>
                 )
             } else if (cardsNum == 3) {
                 return (
-                    <div style={horizontal}>
-                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
-                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
-                        <img width="100" height="125" alt="third-card" src={this.state.thirdImgUrl || ''}></img>
+                    <div style={horizontal}>                
+                        <img width="100" height="125" alt="first-card" src={this.getFirstCardURL()}></img>
+                        <img width="100" height="125" alt="second-card" src={this.getSecondCardURL()}></img>
+                        <img width="100" height="125" alt="third-card" src={this.getThirdCardURL()}></img>
                     </div>
                 )
             } else if (cardsNum == 4) {
                 return (
                     <div style={horizontal}>
-                        <img width="100" height="125" alt="first-card" src={this.state.firstImgUrl || ''}></img>
-                        <img width="100" height="125" alt="second-card" src={this.state.secondImgUrl || ''}></img>
-                        <img width="100" height="125" alt="third-card" src={this.state.thirdImgUrl || ''}></img>
-                        <img width="100" height="125" alt="fourth-card" src={this.state.fourthImgUrl || ''}></img>
+                        <img width="100" height="125" alt="first-card" src={this.getFirstCardURL()}></img>
+                        <img width="100" height="125" alt="second-card" src={this.getSecondCardURL()}></img>
+                        <img width="100" height="125" alt="third-card" src={this.getThirdCardURL()}></img>
+                        <img width="100" height="125" alt="fourth-card" src={this.getFourthCardURL()}></img>
                     </div>
                 )
             }
