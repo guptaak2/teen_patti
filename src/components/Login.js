@@ -20,8 +20,15 @@ class Login extends Component {
 			emailHelperText: 'Please enter your email',
 			passwordHelperText: 'Please enter your password',
 			emailError: false,
-			passwordError: false
+			passwordError: false,
+			showSignUpButton: false
 		};
+	}
+
+	componentDidMount() {
+		fire.database().ref('users').child('showSignUpBtn').once('value').then((snap) => {
+            this.setState({ showSignUpButton: snap.val()})
+        })
 	}
 
 	login(e) {
@@ -159,9 +166,12 @@ class Login extends Component {
 						<Box m={2} pt={3}>
 							<Button variant="contained" color="primary" onClick={this.login.bind(this)} >LOGIN</Button>
 						</Box>
-						{/* <Box>
-							<Button className="btn btn-success" variant="contained" color="primary" onClick={this.signup.bind(this)} >SIGN UP</Button>
-						</Box> */}
+						<div>
+							{this.state.showSignUpButton && 
+							<Box>
+								<Button className="btn btn-success" variant="contained" color="primary" onClick={this.signup.bind(this)} >SIGN UP</Button>
+							</Box>}
+						</div>
 					</form>
 				</div>
 			</div>

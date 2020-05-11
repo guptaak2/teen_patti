@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "ac41c81f8c0296e13a935506dc13a3cd",
+    "revision": "740954fa8e63c2a8eb28309df0589a4f",
     "url": "/teen_patti/index.html"
   },
   {
-    "revision": "7273cc339482b7a00b7b",
+    "revision": "0b76ed29f836c36f913b",
     "url": "/teen_patti/static/css/main.cb1fa1b3.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/teen_patti/static/js/2.af9a99d6.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "7273cc339482b7a00b7b",
-    "url": "/teen_patti/static/js/main.bef9d98b.chunk.js"
+    "revision": "0b76ed29f836c36f913b",
+    "url": "/teen_patti/static/js/main.0e588c54.chunk.js"
   },
   {
     "revision": "bba76384757b3d75c3b8",

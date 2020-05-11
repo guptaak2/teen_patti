@@ -342,7 +342,7 @@ class Cards extends Component {
                 )
             } else if (cardsNum == 3) {
                 return (
-                    <div style={horizontal}>                
+                    <div style={horizontal}>
                         <img width="100" height="125" alt="first-card" src={this.getFirstCardURL()}></img>
                         <img width="100" height="125" alt="second-card" src={this.getSecondCardURL()}></img>
                         <img width="100" height="125" alt="third-card" src={this.getThirdCardURL()}></img>
