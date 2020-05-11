@@ -326,7 +326,7 @@ class Cards extends Component {
 
     renderRealCards() {
         const cardsNum = this.state.numCards
-        if (this.state.gameSet && this.getCardIndicies().length > 0) {
+        if (this.state.gameSet) {
             if (cardsNum == 1) {
                 return (
                     <div style={horizontal}>
@@ -622,19 +622,19 @@ class Cards extends Component {
     }
 
     getFirstCardURL() {
-        return JSON.parse(localStorage.getItem('firstCardURL')) || ''
+        return JSON.parse(localStorage.getItem('firstCardURL')) || backCardImg
     }
 
     getSecondCardURL() {
-        return JSON.parse(localStorage.getItem('secondCardURL')) || ''
+        return JSON.parse(localStorage.getItem('secondCardURL')) || backCardImg
     }
 
     getThirdCardURL() {
-        return JSON.parse(localStorage.getItem('thirdCardURL')) || ''
+        return JSON.parse(localStorage.getItem('thirdCardURL')) || backCardImg
     }
 
     getFourthCardURL() {
-        return JSON.parse(localStorage.getItem('fourthCardURL')) || ''
+        return JSON.parse(localStorage.getItem('fourthCardURL')) || backCardImg
     }
 
     getEnableSee() {
